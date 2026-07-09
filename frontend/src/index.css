@@ -25,6 +25,9 @@ html, body, #root {
         radial-gradient(circle at 50% 42%, rgb(var(--glow) / .42), transparent 34%),
         linear-gradient(135deg, #eefaf5 0%, #e8fbd3 46%, #f7fbfa 100%);
     transition: background .45s ease, color .3s ease;
+    font-family: "Nunito", "Segoe UI", system-ui, sans-serif;
+    font-size: 15px;
+    font-weight: 500;
 }
 
 [data-theme="graphite"] {
@@ -154,6 +157,51 @@ html, body, #root {
     color: var(--accent);
     background: rgb(var(--accent-rgb) / .2);
     box-shadow: 0 8px 24px rgb(var(--accent-rgb) / .14);
+}
+
+.theme-range {
+    height: 18px;
+    accent-color: var(--accent);
+}
+.theme-range::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgb(var(--accent-rgb) / .82), rgb(var(--accent-rgb) / .24));
+    border: 1px solid rgb(var(--accent-rgb) / .38);
+}
+.theme-range::-webkit-slider-thumb {
+    margin-top: -5px;
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / .18);
+}
+
+/* 旧界面大量使用 9–11px 辅助文字，在高分屏上过小。统一提高可读性下限。 */
+.app-background .text-\[9px\] {
+    font-size: 0.72rem;
+    line-height: 1rem;
+}
+.app-background .text-\[10px\],
+.app-background .text-\[11px\] {
+    font-size: 0.78rem;
+    line-height: 1.08rem;
+}
+.app-background .text-xs {
+    font-size: 0.84rem;
+    line-height: 1.16rem;
+}
+.app-background .text-sm {
+    font-size: 0.96rem;
+    line-height: 1.35rem;
+}
+.app-background input,
+.app-background select,
+.app-background textarea,
+.app-background button {
+    font-family: inherit;
+    font-weight: 500;
 }
 
 .mini-text-light { text-shadow: 0 2px 12px rgba(0,0,0,.8), 0 1px 2px rgba(0,0,0,.9); }

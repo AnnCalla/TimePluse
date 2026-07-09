@@ -208,7 +208,7 @@ export const NoteView = ({ onStickyChange, theme, compact, onRestore }: NoteView
                 step={0.05}
                 value={stickyOpacity}
                 onChange={e => setStickyOpacity(parseFloat(e.target.value))}
-                className={`w-24 ${isGray ? 'accent-gray-700' : 'accent-tp-green'}`}
+                className="theme-range w-28"
               />
             </div>
             <div className="flex items-center gap-1">
