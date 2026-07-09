@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { EventsOn } from '../wailsjs/runtime/runtime';
+import { ThemeName } from './theme';
 
 export type UrgencyLevel = 1 | 2 | 3; // 1=不紧急,3=很紧急
 export type ImportanceLevel = 1 | 2 | 3; // 1=不重要,3=很重要
@@ -31,7 +32,7 @@ interface PlannerViewProps {
     title: string;
     expectedSeconds?: number;
   }) => void;
-  theme: 'green' | 'gray';
+  theme: ThemeName;
 }
 
 export const PlannerView = ({ onStartTimerFromPlanner, theme }: PlannerViewProps) => {
@@ -57,7 +58,7 @@ export const PlannerView = ({ onStartTimerFromPlanner, theme }: PlannerViewProps
   const [reflectionText, setReflectionText] = useState('');
 
   const [timerHistory, setTimerHistory] = useState<TimerHistoryItem[]>([]);
-  const isGray = theme === 'gray';
+  const isGray = theme === 'graphite';
 
   // 持久化计划数据到 localStorage
   useEffect(() => {
@@ -327,9 +328,9 @@ interface QuadrantProps {
 const Quadrant = ({ title, color, items, onReflect, onStartTimerFromPlanner, onDelete, theme }: QuadrantProps & {
   onStartTimerFromPlanner?: PlannerViewProps['onStartTimerFromPlanner'];
   onDelete: (id: string) => void;
-  theme: 'green' | 'gray';
+  theme: ThemeName;
 }) => {
-  const isGray = theme === 'gray';
+  const isGray = theme === 'graphite';
   return (
     <div className={`glass-panel rounded-2xl p-3 border-l-4 ${color} flex flex-col gap-2 overflow-hidden`}>
       <div className="text-[11px] font-semibold text-gray-600 mb-1 flex justify-between items-center">

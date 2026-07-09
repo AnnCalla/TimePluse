@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { WindowSetSize, WindowSetAlwaysOnTop, WindowCenter } from '../wailsjs/runtime/runtime';
+import { ThemeName } from './theme';
 
 interface Note {
   id: string;
@@ -11,7 +12,7 @@ interface Note {
 }
 interface NoteViewProps {
   onStickyChange?: (sticky: boolean) => void;
-  theme: 'green' | 'gray';
+  theme: ThemeName;
 }
 
 export const NoteView = ({ onStickyChange, theme }: NoteViewProps) => {
@@ -38,7 +39,7 @@ export const NoteView = ({ onStickyChange, theme }: NoteViewProps) => {
   const [isStickyMode, setIsStickyMode] = useState(false);
   const [stickyOpacity, setStickyOpacity] = useState(0.9);
   const [stickyTheme, setStickyTheme] = useState<'paper' | 'white' | 'dark'>('paper');
-  const isGray = theme === 'gray';
+  const isGray = theme === 'graphite';
 
   const activeNote = notes.find(n => n.id === activeId) || null;
 

@@ -12,11 +12,146 @@ html, body, #root {
 }
 
 .app-background {
-    background: radial-gradient(circle at 50% 40%, #d9f99d 0%, #f0fdf4 60%, #ffffff 100%);
+    --accent: #86d52f;
+    --accent-rgb: 134 213 47;
+    --text: #263244;
+    --muted: #718096;
+    --surface: 255 255 255;
+    --surface-alpha: .34;
+    --edge: 255 255 255;
+    --glow: 177 255 92;
+    color: var(--text);
+    background:
+        radial-gradient(circle at 50% 42%, rgb(var(--glow) / .42), transparent 34%),
+        linear-gradient(135deg, #eefaf5 0%, #e8fbd3 46%, #f7fbfa 100%);
+    transition: background .45s ease, color .3s ease;
+}
+
+[data-theme="graphite"] {
+    --accent: #a9f04a;
+    --accent-rgb: 169 240 74;
+    --text: #eef4f1;
+    --muted: #a9b4bd;
+    --surface: 22 29 38;
+    --surface-alpha: .58;
+    --edge: 255 255 255;
+    --glow: 65 105 90;
+    background:
+        radial-gradient(circle at 52% 38%, rgb(var(--glow) / .48), transparent 36%),
+        linear-gradient(145deg, #10161d, #28313a 55%, #151b21);
+}
+
+[data-theme="pearl"] {
+    --accent: #17202b;
+    --accent-rgb: 23 32 43;
+    --text: #202934;
+    --muted: #68727e;
+    --surface: 255 255 255;
+    --surface-alpha: .56;
+    --edge: 255 255 255;
+    --glow: 232 222 198;
+    background:
+        radial-gradient(circle at 52% 38%, rgb(var(--glow) / .72), transparent 38%),
+        linear-gradient(135deg, #f8f5ed, #dfe7e5 60%, #f4f1e8);
+}
+
+[data-theme="sky"] {
+    --accent: #126a96;
+    --accent-rgb: 18 106 150;
+    --text: #17364a;
+    --muted: #5b7c8e;
+    --surface: 235 249 255;
+    --surface-alpha: .4;
+    --edge: 255 255 255;
+    --glow: 150 220 248;
+    background:
+        radial-gradient(circle at 50% 33%, rgb(var(--glow) / .72), transparent 35%),
+        linear-gradient(180deg, #8fd2ef 0%, #d9f1f6 58%, #edf1df 100%);
+}
+
+[data-theme="wallpaper"] {
+    --accent: #9acb3d;
+    --accent-rgb: 154 203 61;
+    --text: #eaf6f6;
+    --muted: #b9d0d6;
+    --surface: 31 62 88;
+    --surface-alpha: .5;
+    --edge: 224 246 255;
+    --glow: 78 143 177;
+    background:
+        radial-gradient(circle at 47% 26%, rgba(139, 207, 235, .5), transparent 36%),
+        radial-gradient(circle at 50% 75%, rgba(151, 181, 127, .3), transparent 34%),
+        linear-gradient(155deg, #183149 0%, #396886 54%, #203f55 100%);
 }
 
 .draggable { --wails-draggable: drag; }
 .no-drag { --wails-draggable: no-drag; }
+
+.mini-shell {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+.theme-text { color: var(--text); }
+.theme-muted { color: var(--muted); }
+.theme-accent { color: var(--accent); }
+.theme-accent-bg { background-color: var(--accent); }
+.theme-button {
+    background: linear-gradient(145deg, rgb(var(--accent-rgb) / .94), rgb(var(--accent-rgb) / .72));
+    box-shadow: 0 10px 28px rgb(var(--accent-rgb) / .24), inset 0 1px 0 rgba(255,255,255,.42);
+}
+
+.liquid-panel {
+    color: var(--text);
+    background:
+        linear-gradient(145deg, rgb(var(--surface) / calc(var(--surface-alpha) + .12)), rgb(var(--surface) / var(--surface-alpha)));
+    border: 1px solid rgb(var(--edge) / .34);
+    box-shadow:
+        0 24px 70px rgba(5, 16, 26, .22),
+        inset 0 1px 0 rgb(var(--edge) / .44),
+        inset 0 -1px 0 rgba(0,0,0,.08);
+    backdrop-filter: blur(28px) saturate(145%);
+}
+
+.glass-inset {
+    background: rgb(var(--surface) / .2);
+    border: 1px solid rgb(var(--edge) / .18);
+    box-shadow: inset 0 1px 0 rgb(var(--edge) / .18);
+    backdrop-filter: blur(18px);
+}
+
+.glass-chip {
+    background: rgb(var(--surface) / .24);
+    border: 1px solid rgb(var(--edge) / .22);
+    backdrop-filter: blur(16px);
+}
+
+.glass-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: .5rem;
+    border-radius: 9999px;
+    color: var(--muted);
+    background: rgb(var(--surface) / .2);
+    border: 1px solid rgb(var(--edge) / .15);
+    transition: transform .2s ease, background .2s ease, color .2s ease;
+}
+.glass-icon-button:hover {
+    color: var(--text);
+    background: rgb(var(--surface) / .38);
+    transform: translateY(-1px);
+}
+
+.mini-text-light { text-shadow: 0 2px 12px rgba(0,0,0,.8), 0 1px 2px rgba(0,0,0,.9); }
+.mini-text-dark { text-shadow: 0 2px 12px rgba(255,255,255,.85), 0 1px 2px rgba(255,255,255,.95); }
+
+.heat-level-0 { background: rgb(var(--surface) / .2); border: 1px solid rgb(var(--edge) / .08); }
+.heat-level-1 { background: rgb(var(--accent-rgb) / .25); }
+.heat-level-2 { background: rgb(var(--accent-rgb) / .45); }
+.heat-level-3 { background: rgb(var(--accent-rgb) / .68); }
+.heat-level-4 { background: rgb(var(--accent-rgb) / .96); box-shadow: 0 0 10px rgb(var(--accent-rgb) / .28); }
 
 /* 使用 @layer components 定义复用组件样式 */
 @layer components {

@@ -6,6 +6,10 @@ export function GetStoragePath() {
   return window['go']['main']['App']['GetStoragePath']();
 }
 
+export function GetHistory() {
+  return window['go']['main']['App']['GetHistory']();
+}
+
 export function SaveHistory(arg1, arg2, arg3) {
   return window['go']['main']['App']['SaveHistory'](arg1, arg2, arg3);
 }

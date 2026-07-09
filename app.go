@@ -90,3 +90,19 @@ func (a *App) SaveHistory(taskName string, duration int, mode string) string {
 
 	return "Saved"
 }
+
+// GetHistory 返回已经持久化的工作会话，供统计视图按日、周、月聚合。
+func (a *App) GetHistory() []HistoryItem {
+	var data AppData
+	content, err := os.ReadFile(a.GetStoragePath())
+	if err != nil {
+		return []HistoryItem{}
+	}
+	if err := json.Unmarshal(content, &data); err != nil {
+		return []HistoryItem{}
+	}
+	if data.History == nil {
+		return []HistoryItem{}
+	}
+	return data.History
+}

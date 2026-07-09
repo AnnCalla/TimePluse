@@ -4,19 +4,22 @@ import { TimerView } from './TimerView';
 import { PlannerView } from './PlannerView';
 import { NoteView } from './NoteView';
 import { WindowSetSize, WindowSetAlwaysOnTop, WindowCenter, EventsOn } from '../wailsjs/runtime/runtime';
+import { isThemeName, ThemeName } from './theme';
 
 function App() {
     const [activeTab, setActiveTab] = useState('timer');
     // 极简模式状态
     const [isMini, setIsMini] = useState(false);
     const [isStickyNote, setIsStickyNote] = useState(false);
-    const [theme, setTheme] = useState<'green' | 'gray'>(() => {
-        if (typeof window === 'undefined') return 'green';
+    const [theme, setTheme] = useState<ThemeName>(() => {
+        if (typeof window === 'undefined') return 'wallpaper';
         try {
             const saved = window.localStorage.getItem('timepulse_theme');
-            return saved === 'gray' ? 'gray' : 'green';
+            if (saved === 'green') return 'lime';
+            if (saved === 'gray') return 'graphite';
+            return isThemeName(saved) ? saved : 'wallpaper';
         } catch {
-            return 'green';
+            return 'wallpaper';
         }
     });
 
@@ -73,10 +76,6 @@ function App() {
         }
     };
 
-    const handleThemeToggle = () => {
-        setTheme(prev => (prev === 'green' ? 'gray' : 'green'));
-    };
-
     return (
         <Layout
             activeTab={activeTab}
@@ -84,7 +83,7 @@ function App() {
             isMini={isMini}
             isStickyNote={isStickyNote}
             theme={theme}
-            onThemeToggle={handleThemeToggle}
+            onThemeChange={setTheme}
         >
             {activeTab === 'timer' && (
                 <TimerView

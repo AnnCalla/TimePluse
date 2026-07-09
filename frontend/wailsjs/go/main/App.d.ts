@@ -3,4 +3,6 @@
 
 export function GetStoragePath():Promise<string>;
 
+export function GetHistory():Promise<Array<any>>;
+
 export function SaveHistory(arg1:string,arg2:number,arg3:string):Promise<string>;
