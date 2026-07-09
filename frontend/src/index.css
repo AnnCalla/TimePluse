@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+    user-select: none;
+    background-color: transparent;
+}
+
+.app-background {
+    background: radial-gradient(circle at 50% 40%, #d9f99d 0%, #f0fdf4 60%, #ffffff 100%);
+}
+
+.draggable { --wails-draggable: drag; }
+.no-drag { --wails-draggable: no-drag; }
+
+/* 使用 @layer components 定义复用组件样式 */
+@layer components {
+    .glass-panel {
+        /* 这里只保留基础玻璃效果，阴影用类名 shadow-glass 在 JSX 里单独加 */
+        @apply bg-white/60 backdrop-blur-md border border-white/50;
+    }
+}
