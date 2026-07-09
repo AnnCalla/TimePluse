@@ -12,7 +12,7 @@ export const THEME_OPTIONS: ThemeOption[] = [
     { id: 'graphite', label: '黑曜玻璃', swatch: '#20262f', miniText: 'light' },
     { id: 'pearl', label: '珍珠玻璃', swatch: '#f4f1e8', miniText: 'dark' },
     { id: 'sky', label: '晴空玻璃', swatch: '#69b9e5', miniText: 'dark' },
-    { id: 'wallpaper', label: '壁纸取色', swatch: '#31557d', miniText: 'light' },
+    { id: 'wallpaper', label: '壁纸取色', swatch: '#8dceec', miniText: 'dark' },
 ];
 
 export const isThemeName = (value: string | null): value is ThemeName =>

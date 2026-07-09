@@ -70,18 +70,19 @@ html, body, #root {
 }
 
 [data-theme="wallpaper"] {
-    --accent: #9acb3d;
-    --accent-rgb: 154 203 61;
-    --text: #eaf6f6;
-    --muted: #b9d0d6;
-    --surface: 31 62 88;
-    --surface-alpha: .5;
-    --edge: 224 246 255;
-    --glow: 78 143 177;
+    --accent: #1956ad;
+    --accent-rgb: 25 86 173;
+    --text: #173650;
+    --muted: #668493;
+    --surface: 244 242 222;
+    --surface-alpha: .42;
+    --edge: 255 255 245;
+    --glow: 157 211 236;
     background:
-        radial-gradient(circle at 47% 26%, rgba(139, 207, 235, .5), transparent 36%),
-        radial-gradient(circle at 50% 75%, rgba(151, 181, 127, .3), transparent 34%),
-        linear-gradient(155deg, #183149 0%, #396886 54%, #203f55 100%);
+        radial-gradient(ellipse at 18% 66%, rgba(248, 246, 218, .92) 0 15%, transparent 31%),
+        radial-gradient(ellipse at 80% 62%, rgba(248, 246, 218, .9) 0 16%, transparent 32%),
+        radial-gradient(circle at 51% 30%, rgba(174, 218, 237, .8), transparent 32%),
+        linear-gradient(180deg, #8dceec 0%, #b7dfec 48%, #edf0d7 72%, #718e98 100%);
 }
 
 .draggable { --wails-draggable: drag; }

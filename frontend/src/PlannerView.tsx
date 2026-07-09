@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { EventsOn } from '../wailsjs/runtime/runtime';
 import { ThemeName } from './theme';
+import { Minimize2 } from 'lucide-react';
 
 export type UrgencyLevel = 1 | 2 | 3; // 1=不紧急,3=很紧急
 export type ImportanceLevel = 1 | 2 | 3; // 1=不重要,3=很重要
@@ -208,7 +209,12 @@ export const PlannerView = ({ onStartTimerFromPlanner, theme, compact, onRestore
     <div className="flex flex-col h-full w-full p-6 gap-4">
       {/* 顶部输入区域 */}
       <div className="liquid-panel rounded-2xl p-4 flex flex-col gap-3">
-        <div className="text-sm font-semibold theme-text">新建计划</div>
+        <div className="flex items-center justify-between">
+          <div className="text-sm font-semibold theme-text">新建计划</div>
+          <button onClick={onRestore} className="glass-icon-button theme-control" title="缩小计划">
+            <Minimize2 size={17} />
+          </button>
+        </div>
         <div className="flex flex-wrap gap-3 items-center">
           <input
             value={title}

@@ -3,6 +3,8 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { WindowSetSize, WindowSetAlwaysOnTop, WindowCenter } from '../wailsjs/runtime/runtime';
 import { ThemeName } from './theme';
+import { THEME_OPTIONS } from './theme';
+import { Minimize2 } from 'lucide-react';
 
 interface Note {
   id: string;
@@ -40,7 +42,7 @@ export const NoteView = ({ onStickyChange, theme, compact, onRestore }: NoteView
   });
   const [isStickyMode, setIsStickyMode] = useState(false);
   const [stickyOpacity, setStickyOpacity] = useState(0.9);
-  const [stickyTheme, setStickyTheme] = useState<'paper' | 'white' | 'dark'>('paper');
+  const [stickyTheme, setStickyTheme] = useState<ThemeName>(theme);
   const isGray = theme === 'graphite';
 
   const activeNote = notes.find(n => n.id === activeId) || null;
@@ -161,22 +163,16 @@ export const NoteView = ({ onStickyChange, theme, compact, onRestore }: NoteView
 
   // Sticky 模式：主窗口变成一张悬浮便签
   if (isStickyMode && activeNote) {
-    const themeClass =
-      stickyTheme === 'paper'
-        ? 'bg-[#f4e1c1] text-stone-800'
-        : stickyTheme === 'dark'
-        ? 'bg-zinc-900 text-zinc-100'
-        : 'bg-white text-gray-800';
-
     return (
       <div className="h-full w-full flex items-stretch justify-stretch p-2">
         <div
-          className={`flex flex-col w-full h-full rounded-2xl shadow-2xl border border-black/10 overflow-hidden ${themeClass}`}
+          data-theme={stickyTheme}
+          className="liquid-panel flex flex-col w-full h-full rounded-2xl overflow-hidden"
           style={{ opacity: stickyOpacity }}
         >
           <div className="flex items-center justify-between px-3 py-1.5 text-[11px] draggable select-none">
             <input
-              className="flex-1 mr-2 bg-transparent border-b border-dashed border-black/20 focus:outline-none focus:border-tp-green text-xs no-drag"
+              className="flex-1 mr-2 bg-transparent border-b border-dashed border-white/30 focus:outline-none text-xs no-drag theme-text"
               value={activeNote.title}
               onChange={e => updateActive({ title: e.target.value })}
             />
@@ -202,7 +198,7 @@ export const NoteView = ({ onStickyChange, theme, compact, onRestore }: NoteView
             onPaste={handlePaste}
             placeholder="这是一个悬浮便签，可拖动到屏幕任意位置。"
           />
-          <div className="px-3 py-1.5 text-[10px] flex items-center justify-between gap-2 bg-black/5 no-drag">
+          <div className="px-3 py-1.5 text-[10px] flex items-center justify-between gap-2 bg-white/5 no-drag">
             <div className="flex items-center gap-2">
               <span className="text-[10px] text-gray-500">透明度</span>
               <input
@@ -216,31 +212,18 @@ export const NoteView = ({ onStickyChange, theme, compact, onRestore }: NoteView
               />
             </div>
             <div className="flex items-center gap-1">
-              <span className="text-[10px] text-gray-500">背景</span>
-              <button
-                onClick={() => setStickyTheme('paper')}
-                className={`px-2 py-0.5 rounded-full text-[10px] ${
-                  stickyTheme === 'paper' ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800'
-                }`}
-              >
-                牛皮纸
-              </button>
-              <button
-                onClick={() => setStickyTheme('white')}
-                className={`px-2 py-0.5 rounded-full text-[10px] ${
-                  stickyTheme === 'white' ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-700'
-                }`}
-              >
-                浅色
-              </button>
-              <button
-                onClick={() => setStickyTheme('dark')}
-                className={`px-2 py-0.5 rounded-full text-[10px] ${
-                  stickyTheme === 'dark' ? 'bg-black text-white' : 'bg-black/60 text-white'
-                }`}
-              >
-                深色
-              </button>
+              <span className="mr-1 text-[10px] theme-muted">主题</span>
+              {THEME_OPTIONS.map(option => (
+                <button
+                  key={option.id}
+                  onClick={() => setStickyTheme(option.id)}
+                  className={`h-4 w-4 rounded-full border transition-transform ${
+                    stickyTheme === option.id ? 'scale-125 border-current' : 'border-white/50'
+                  }`}
+                  style={{ backgroundColor: option.swatch }}
+                  title={option.label}
+                />
+              ))}
             </div>
           </div>
         </div>
@@ -254,12 +237,17 @@ export const NoteView = ({ onStickyChange, theme, compact, onRestore }: NoteView
       <div className="w-56 liquid-panel rounded-2xl p-3 flex flex-col gap-2">
         <div className="flex justify-between items-center mb-1 text-xs theme-muted">
           <span className="font-semibold">笔记</span>
-          <button
-            onClick={createNote}
-            className="px-2 py-1 rounded-full text-[11px] text-white theme-button"
-          >
-            新建
-          </button>
+          <div className="flex items-center gap-1">
+            <button onClick={onRestore} className="glass-icon-button theme-control" title="缩小便签">
+              <Minimize2 size={15} />
+            </button>
+            <button
+              onClick={createNote}
+              className="px-2 py-1 rounded-full text-[11px] text-white theme-button"
+            >
+              新建
+            </button>
+          </div>
         </div>
         <div className="flex-1 overflow-auto space-y-1 pr-1">
           {notes.length === 0 && (
