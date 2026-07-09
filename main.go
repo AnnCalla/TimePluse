@@ -16,7 +16,7 @@ func main() {
 	app := NewApp()
 
 	err := wails.Run(&options.App{
-		Title:            "TimePulse",
+		Title:            "Patrix",
 		Width:            1024,
 		Height:           650,
 		Frameless:        true, // 无边框

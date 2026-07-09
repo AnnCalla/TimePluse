@@ -15,12 +15,12 @@ var trayIcon []byte
 func (a *App) initTray() {
 	systray.Run(func() {
 		systray.SetIcon(trayIcon)
-		systray.SetTooltip("TimePulse · 计划、计时与便签")
+		systray.SetTooltip("Patrix · 计划、计时与便签")
 
-		show := systray.AddMenuItem("显示主窗口", "恢复 TimePulse 主窗口")
+		show := systray.AddMenuItem("显示主窗口", "恢复 Patrix 主窗口")
 		miniTimer := systray.AddMenuItem("迷你番茄钟", "显示透明迷你番茄钟")
 		systray.AddSeparator()
-		quit := systray.AddMenuItem("彻底退出", "结束 TimePulse 和所有快捷键")
+		quit := systray.AddMenuItem("彻底退出", "结束 Patrix 和所有快捷键")
 
 		go func() {
 			for {

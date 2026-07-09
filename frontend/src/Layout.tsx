@@ -27,7 +27,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
             {!hideChrome && (
                 <div className="h-10 flex items-center justify-between px-4 draggable z-50">
                     <div className="font-bold tracking-wider text-lg flex items-center gap-2 theme-accent">
-                        <span>TimePulse</span>
+                        <span>Patrix</span>
                     </div>
                     <div className="flex gap-2 no-drag">
                         <div className="relative">
@@ -61,7 +61,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
                         <button
                             onClick={QuitApplication}
                             className="p-1 hover:bg-red-500 hover:text-white rounded-full transition"
-                            title="彻底退出 TimePulse"
+                            title="彻底退出 Patrix"
                         >
                             <X size={16}/>
                         </button>

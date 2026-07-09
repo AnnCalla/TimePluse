@@ -139,7 +139,7 @@ func (a *App) initHotkeys() {
 }
 
 func (a *App) setMiniWindowMode(enabled bool) {
-	title, _ := syscall.UTF16PtrFromString("TimePulse")
+	title, _ := syscall.UTF16PtrFromString("Patrix")
 	hwnd, _, _ := procFindWindowW.Call(0, uintptr(unsafe.Pointer(title)))
 	if hwnd == 0 {
 		hwnd, _, _ = procGetForegroundWindow.Call()
