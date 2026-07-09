@@ -6,7 +6,6 @@ import (
 	"fmt"
 	goruntime "runtime"
 	"syscall"
-	"time"
 	"unsafe"
 
 	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
@@ -18,6 +17,7 @@ var (
 	procUnregisterHotKey              = user32.NewProc("UnregisterHotKey")
 	procGetMessageW                   = user32.NewProc("GetMessageW")
 	procGetForegroundWindow           = user32.NewProc("GetForegroundWindow")
+	procFindWindowW                   = user32.NewProc("FindWindowW")
 	procGetDC                         = user32.NewProc("GetDC")
 	procReleaseDC                     = user32.NewProc("ReleaseDC")
 	procGetPixel                      = syscall.NewLazyDLL("gdi32.dll").NewProc("GetPixel")
@@ -61,19 +61,38 @@ func (a *App) initHotkeys() {
 	goruntime.LockOSThread()
 	defer goruntime.UnlockOSThread()
 
-	const hotkeyID = 1
-	// 虚拟键码 'P' = 0x50
-	r1, _, err := procRegisterHotKey.Call(
-		0,
-		uintptr(hotkeyID),
-		uintptr(modControl|modAlt),
-		uintptr(0x50),
-	)
-	if r1 == 0 {
-		fmt.Println("RegisterHotKey Ctrl+Alt+P failed:", err)
+	hotkeys := []struct {
+		id      uintptr
+		key     uintptr
+		feature string
+		mode    string
+	}{
+		{1, 0x31, "timer", "pomodoro"},  // Ctrl+Alt+1
+		{2, 0x32, "timer", "custom"},    // Ctrl+Alt+2
+		{3, 0x33, "timer", "stopwatch"}, // Ctrl+Alt+3
+		{4, 0x34, "planner", ""},        // Ctrl+Alt+4
+		{5, 0x35, "note", ""},           // Ctrl+Alt+5
+		{6, 0x50, "note", ""},           // 保留 Ctrl+Alt+P
+	}
+	registered := make(map[uintptr]struct {
+		feature string
+		mode    string
+	})
+	for _, hotkey := range hotkeys {
+		ok, _, err := procRegisterHotKey.Call(0, hotkey.id, uintptr(modControl|modAlt), hotkey.key)
+		if ok == 0 {
+			fmt.Printf("RegisterHotKey id=%d failed: %v\n", hotkey.id, err)
+			continue
+		}
+		registered[hotkey.id] = struct {
+			feature string
+			mode    string
+		}{hotkey.feature, hotkey.mode}
+		defer procUnregisterHotKey.Call(0, hotkey.id, 0)
+	}
+	if len(registered) == 0 {
 		return
 	}
-	defer procUnregisterHotKey.Call(0, uintptr(hotkeyID), 0)
 
 	var msg winMsg
 	for {
@@ -100,25 +119,31 @@ func (a *App) initHotkeys() {
 			return
 		}
 
-		if msg.message == wmHotkey && msg.wParam == hotkeyID {
+		if msg.message == wmHotkey {
+			shortcut, exists := registered[msg.wParam]
+			if !exists {
+				continue
+			}
 			if a.ctx == nil {
 				continue
 			}
-			// 唤起窗口并切到笔记标签
 			wailsruntime.WindowShow(a.ctx)
 			wailsruntime.WindowUnminimise(a.ctx)
-			wailsruntime.WindowCenter(a.ctx)
 			wailsruntime.WindowSetAlwaysOnTop(a.ctx, true)
-			time.AfterFunc(2*time.Second, func() {
-				wailsruntime.WindowSetAlwaysOnTop(a.ctx, false)
+			wailsruntime.EventsEmit(a.ctx, "shortcut:open-feature", map[string]string{
+				"feature": shortcut.feature,
+				"mode":    shortcut.mode,
 			})
-			wailsruntime.EventsEmit(a.ctx, "shortcut:open-note")
 		}
 	}
 }
 
 func (a *App) setMiniWindowMode(enabled bool) {
-	hwnd, _, _ := procGetForegroundWindow.Call()
+	title, _ := syscall.UTF16PtrFromString("TimePulse")
+	hwnd, _, _ := procFindWindowW.Call(0, uintptr(unsafe.Pointer(title)))
+	if hwnd == 0 {
+		hwnd, _, _ = procGetForegroundWindow.Call()
+	}
 	if hwnd == 0 {
 		return
 	}

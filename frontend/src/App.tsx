@@ -9,12 +9,15 @@ import {
 } from '../wailsjs/runtime/runtime';
 import { isThemeName, ThemeName } from './theme';
 import { GetScreenContrast, SetMiniWindowMode } from '../wailsjs/go/main/App';
+import { TimerMode } from './useTimer';
 
 function App() {
     const [activeTab, setActiveTab] = useState('timer');
     // 极简模式状态
     const [isMini, setIsMini] = useState(false);
     const [miniContrast, setMiniContrast] = useState<'light' | 'dark'>('dark');
+    const [miniSize, setMiniSize] = useState({ width: 300, height: 200 });
+    const [requestedTimerMode, setRequestedTimerMode] = useState<TimerMode | null>(null);
     const [isStickyNote, setIsStickyNote] = useState(false);
     const [theme, setTheme] = useState<ThemeName>(() => {
         if (typeof window === 'undefined') return 'wallpaper';
@@ -34,11 +37,29 @@ function App() {
         expectedSeconds?: number;
     } | null>(null);
 
-    // 监听来自 Go 端的全局快捷键事件：shortcut:open-note
+    const enterMini = async (feature: 'timer' | 'planner' | 'note', mode?: TimerMode) => {
+        const size = feature === 'timer'
+            ? { width: 300, height: 200 }
+            : feature === 'planner'
+                ? { width: 380, height: 330 }
+                : { width: 340, height: 280 };
+        if (mode) setRequestedTimerMode(mode);
+        setActiveTab(feature);
+        setMiniSize(size);
+        await SetMiniWindowMode(true);
+        WindowSetSize(size.width, size.height);
+        WindowSetAlwaysOnTop(true);
+        setIsMini(true);
+    };
+
+    // 监听 Go 端全局快捷键，直接唤起对应功能的迷你版本。
     useEffect(() => {
-        const off = EventsOn('shortcut:open-note', () => {
-            setIsMini(false);
-            setActiveTab('note');
+        const off = EventsOn('shortcut:open-feature', (payload: { feature?: string; mode?: string }) => {
+            const feature = payload?.feature;
+            if (feature !== 'timer' && feature !== 'planner' && feature !== 'note') return;
+            const mode = payload?.mode;
+            const timerMode = mode === 'custom' || mode === 'stopwatch' || mode === 'pomodoro' ? mode : undefined;
+            enterMini(feature, timerMode);
         });
         return () => {
             if (off) off();
@@ -61,10 +82,10 @@ function App() {
             try {
                 const position = await WindowGetPosition();
                 const samples = await Promise.all([
-                    GetScreenContrast(position.x + 150, position.y - 2),
-                    GetScreenContrast(position.x + 150, position.y + 202),
-                    GetScreenContrast(position.x - 2, position.y + 100),
-                    GetScreenContrast(position.x + 302, position.y + 100),
+                    GetScreenContrast(position.x + Math.floor(miniSize.width / 2), position.y - 2),
+                    GetScreenContrast(position.x + Math.floor(miniSize.width / 2), position.y + miniSize.height + 2),
+                    GetScreenContrast(position.x - 2, position.y + Math.floor(miniSize.height / 2)),
+                    GetScreenContrast(position.x + miniSize.width + 2, position.y + Math.floor(miniSize.height / 2)),
                 ]);
                 if (!cancelled) {
                     const lightVotes = samples.filter(sample => sample === 'light').length;
@@ -79,14 +100,12 @@ function App() {
             cancelled = true;
             window.clearInterval(timer);
         };
-    }, [isMini]);
+    }, [isMini, miniSize]);
 
     const handleToggleMini = async () => {
         if (!isMini) {
-            await SetMiniWindowMode(true);
-            WindowSetSize(300, 200);
-            WindowSetAlwaysOnTop(true);
-            setIsMini(true);
+            const feature = activeTab === 'planner' || activeTab === 'note' ? activeTab : 'timer';
+            await enterMini(feature);
 
             // 暂时隐藏窗口后读取其中心下方的真实屏幕像素，避免采到窗口自身。
             window.setTimeout(async () => {
@@ -94,7 +113,10 @@ function App() {
                     const position = await WindowGetPosition();
                     WindowHide();
                     await new Promise(resolve => window.setTimeout(resolve, 80));
-                    const contrast = await GetScreenContrast(position.x + 150, position.y + 100);
+                    const contrast = await GetScreenContrast(
+                        position.x + Math.floor(miniSize.width / 2),
+                        position.y + Math.floor(miniSize.height / 2),
+                    );
                     setMiniContrast(contrast === 'light' ? 'light' : 'dark');
                 } finally {
                     WindowShow();
@@ -130,30 +152,34 @@ function App() {
             theme={theme}
             onThemeChange={setTheme}
         >
-            {activeTab === 'timer' && (
-                <TimerView
-                    isMini={isMini}
-                    toggleMini={handleToggleMini}
-                    pendingConfig={pendingTimerConfig}
-                    onConfigConsumed={() => setPendingTimerConfig(null)}
-                    theme={theme}
-                    miniContrast={miniContrast}
-                />
-            )}
-            {activeTab === 'planner' && !isMini && (
-                <PlannerView onStartTimerFromPlanner={handleStartTimerFromPlanner} theme={theme} />
-            )}
-            {activeTab === 'planner' && isMini && (
-                <div className="p-4 text-xs text-gray-400">
-                    计划视图在极简模式下暂不显示，请还原窗口。
-                </div>
-            )}
-            {activeTab === 'note' && !isMini && <NoteView onStickyChange={setIsStickyNote} theme={theme} />}
-            {activeTab === 'note' && isMini && (
-                <div className="p-4 text-xs text-gray-400">
-                    笔记视图在极简模式下暂不显示，请还原窗口。
-                </div>
-            )}
+            <div className={`h-full w-full ${activeTab === 'timer' ? 'block' : 'hidden'}`}>
+              <TimerView
+                  isMini={isMini && activeTab === 'timer'}
+                  toggleMini={handleToggleMini}
+                  pendingConfig={pendingTimerConfig}
+                  onConfigConsumed={() => setPendingTimerConfig(null)}
+                  theme={theme}
+                  miniContrast={miniContrast}
+                  requestedMode={requestedTimerMode}
+                  onRequestedModeConsumed={() => setRequestedTimerMode(null)}
+              />
+            </div>
+            <div className={`h-full w-full ${activeTab === 'planner' ? 'block' : 'hidden'}`}>
+              <PlannerView
+                  onStartTimerFromPlanner={handleStartTimerFromPlanner}
+                  theme={theme}
+                  compact={isMini && activeTab === 'planner'}
+                  onRestore={handleToggleMini}
+              />
+            </div>
+            <div className={`h-full w-full ${activeTab === 'note' ? 'block' : 'hidden'}`}>
+              <NoteView
+                  onStickyChange={setIsStickyNote}
+                  theme={theme}
+                  compact={isMini && activeTab === 'note'}
+                  onRestore={handleToggleMini}
+              />
+            </div>
         </Layout>
     )
 }

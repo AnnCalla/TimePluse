@@ -33,9 +33,11 @@ interface PlannerViewProps {
     expectedSeconds?: number;
   }) => void;
   theme: ThemeName;
+  compact?: boolean;
+  onRestore?: () => void;
 }
 
-export const PlannerView = ({ onStartTimerFromPlanner, theme }: PlannerViewProps) => {
+export const PlannerView = ({ onStartTimerFromPlanner, theme, compact, onRestore }: PlannerViewProps) => {
   const [items, setItems] = useState<TodoItem[]>(() => {
     if (typeof window === 'undefined') return [];
     try {
@@ -161,19 +163,58 @@ export const PlannerView = ({ onStartTimerFromPlanner, theme }: PlannerViewProps
       .join('、')}。试着回顾一下：哪些事情对长期目标最有价值？`;
   }, [items]);
 
+  const priorityItems = useMemo(() => items
+    .filter(item => !item.done)
+    .sort((a, b) => (b.importance * 2 + b.urgency) - (a.importance * 2 + a.urgency))
+    .slice(0, 4), [items]);
+
+  if (compact) {
+    return (
+      <div className="draggable h-full w-full p-2" onDoubleClick={onRestore} title="拖动窗口；双击空白处恢复">
+        <div className="liquid-panel flex h-full w-full flex-col rounded-3xl p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <div>
+              <div className="text-[10px] uppercase tracking-[.2em] theme-muted">Priority</div>
+              <div className="text-sm font-semibold theme-text">最重要的计划</div>
+            </div>
+            <button onClick={onRestore} className="no-drag glass-icon-button px-3 text-[10px]">还原</button>
+          </div>
+          <div className="min-h-0 flex-1 space-y-2 overflow-auto">
+            {priorityItems.length === 0 && <div className="py-8 text-center text-xs theme-muted">暂无待办计划</div>}
+            {priorityItems.map((item, index) => (
+              <div key={item.id} className="glass-inset flex items-center gap-2 rounded-2xl px-3 py-2">
+                <span className="theme-accent text-xs font-bold">{index + 1}</span>
+                <span className="min-w-0 flex-1 truncate text-xs theme-text">{item.title}</span>
+                <span className="text-[9px] theme-muted">重{item.importance} · 急{item.urgency}</span>
+              </div>
+            ))}
+          </div>
+          <div className="no-drag mt-3 flex gap-2" onDoubleClick={event => event.stopPropagation()}>
+            <input
+              value={title}
+              onChange={event => setTitle(event.target.value)}
+              onKeyDown={event => { if (event.key === 'Enter') addItem(); }}
+              placeholder="快速添加重要计划"
+              className="min-w-0 flex-1 rounded-2xl glass-inset px-3 py-2 text-xs theme-text outline-none placeholder:opacity-50"
+            />
+            <button onClick={addItem} className="theme-button rounded-2xl px-4 text-xs text-white">添加</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full w-full p-6 gap-4">
       {/* 顶部输入区域 */}
-      <div className="glass-panel rounded-2xl p-4 flex flex-col gap-3">
-        <div className="text-sm font-semibold text-gray-700">新建计划</div>
+      <div className="liquid-panel rounded-2xl p-4 flex flex-col gap-3">
+        <div className="text-sm font-semibold theme-text">新建计划</div>
         <div className="flex flex-wrap gap-3 items-center">
           <input
             value={title}
             onChange={e => setTitle(e.target.value)}
             placeholder="要做什么？"
-            className={`flex-1 min-w-[160px] px-3 py-2 rounded-xl border bg-white/60 text-sm focus:outline-none focus:ring-1 ${
-              isGray ? 'border-gray-300 focus:ring-gray-600' : 'border-gray-200 focus:ring-tp-green'
-            }`}
+            className="flex-1 min-w-[160px] px-3 py-2 rounded-xl glass-inset text-sm theme-text focus:outline-none"
           />
           <select
             value={urgency}
@@ -222,9 +263,7 @@ export const PlannerView = ({ onStartTimerFromPlanner, theme }: PlannerViewProps
           </select>
           <button
             onClick={addItem}
-            className={`px-4 py-2 rounded-xl text-white text-sm font-medium shadow-sm hover:shadow-md transition ${
-              isGray ? 'bg-gray-600 hover:bg-gray-700' : 'bg-tp-green hover:bg-lime-500'
-            }`}
+            className="px-4 py-2 rounded-xl text-white text-sm font-medium theme-button transition"
           >
             加入四象限
           </button>
@@ -240,13 +279,11 @@ export const PlannerView = ({ onStartTimerFromPlanner, theme }: PlannerViewProps
       </div>
 
       {/* 简易“今日总结”占位，后续可换成 AI */}
-      <div className="glass-panel rounded-2xl p-4 text-xs text-gray-600">
+      <div className="liquid-panel rounded-2xl p-4 text-xs theme-muted">
         <div className="flex justify-between items-center mb-2">
-          <span className="font-semibold text-gray-700">今日日报（占位版）</span>
+          <span className="font-semibold theme-text">今日日报（占位版）</span>
           <button
-            className={`px-3 py-1 rounded-full text-[11px] text-white ${
-              isGray ? 'bg-gray-600 hover:bg-gray-700' : 'bg-tp-green hover:bg-lime-500'
-            }`}
+            className="px-3 py-1 rounded-full text-[11px] text-white theme-button"
           >
             生成今日日报
           </button>
@@ -256,7 +293,7 @@ export const PlannerView = ({ onStartTimerFromPlanner, theme }: PlannerViewProps
 
       {/* 计时完成记录 */}
       {timerHistory.length > 0 && (
-        <div className="glass-panel rounded-2xl p-4 text-xs text-gray-600">
+        <div className="liquid-panel rounded-2xl p-4 text-xs theme-muted">
           <div className="flex justify-between items-center mb-2">
             <span className="font-semibold text-gray-700">专注完成记录</span>
           </div>
@@ -332,8 +369,8 @@ const Quadrant = ({ title, color, items, onReflect, onStartTimerFromPlanner, onD
 }) => {
   const isGray = theme === 'graphite';
   return (
-    <div className={`glass-panel rounded-2xl p-3 border-l-4 ${color} flex flex-col gap-2 overflow-hidden`}>
-      <div className="text-[11px] font-semibold text-gray-600 mb-1 flex justify-between items-center">
+    <div className={`liquid-panel rounded-2xl p-3 border-l-4 ${color} flex flex-col gap-2 overflow-hidden`}>
+      <div className="text-[11px] font-semibold theme-text mb-1 flex justify-between items-center">
         <span>{title}</span>
         <span className="text-[10px] text-gray-400">{items.length} 项</span>
       </div>
@@ -344,8 +381,8 @@ const Quadrant = ({ title, color, items, onReflect, onStartTimerFromPlanner, onD
         {items.map(it => (
           <div
             key={it.id}
-            className={`w-full px-3 py-2 rounded-xl bg-white/70 text-[11px] flex flex-col gap-1 border border-white/80 shadow-sm ${
-              it.done ? 'opacity-60' : 'text-gray-700'
+            className={`w-full px-3 py-2 rounded-xl glass-inset text-[11px] flex flex-col gap-1 shadow-sm theme-text ${
+              it.done ? 'opacity-60' : ''
             }`}
           >
             <div className="flex justify-between items-center">

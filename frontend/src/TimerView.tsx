@@ -15,9 +15,14 @@ interface TimerViewProps {
     onConfigConsumed?: () => void;
     theme: ThemeName;
     miniContrast: 'light' | 'dark';
+    requestedMode?: TimerMode | null;
+    onRequestedModeConsumed?: () => void;
 }
 
-export const TimerView = ({ isMini, toggleMini, pendingConfig, onConfigConsumed, theme, miniContrast }: TimerViewProps) => {
+export const TimerView = ({
+    isMini, toggleMini, pendingConfig, onConfigConsumed, theme, miniContrast,
+    requestedMode, onRequestedModeConsumed,
+}: TimerViewProps) => {
     const [showSettings, setShowSettings] = useState(false);
     const [showStats, setShowStats] = useState(false);
     const {
@@ -70,6 +75,12 @@ export const TimerView = ({ isMini, toggleMini, pendingConfig, onConfigConsumed,
         if (onConfigConsumed) onConfigConsumed();
     }, [pendingConfig, onConfigConsumed, setTaskName, setMode, setCustomInitial, setTimeLeft]);
 
+    useEffect(() => {
+        if (!requestedMode) return;
+        setMode(requestedMode);
+        onRequestedModeConsumed?.();
+    }, [requestedMode, onRequestedModeConsumed, setMode]);
+
     const currentInitial = mode === 'pomodoro' ? pomodoroInitial : customInitial;
     const isGray = theme === 'graphite';
     if (isMini) {
@@ -105,7 +116,7 @@ export const TimerView = ({ isMini, toggleMini, pendingConfig, onConfigConsumed,
     );
 
     return (
-        <div className="h-full w-full flex flex-col items-center justify-center relative transition-all p-0">
+        <div className="h-full w-full flex flex-col items-center justify-start relative transition-all px-0 pb-4 pt-24">
             {showStats && <TimerStats theme={theme} onClose={() => setShowStats(false)} />}
             
             {/* --- 顶部功能栏 (仅在正常模式显示) --- */}
@@ -175,7 +186,7 @@ export const TimerView = ({ isMini, toggleMini, pendingConfig, onConfigConsumed,
 
             {/* 番茄状态提示（仅番茄模式 & 正常模式） */}
             {mode === 'pomodoro' && (
-                <div className="mb-3 flex items-center gap-3 text-[11px] theme-muted">
+                <div className="mb-3 flex shrink-0 items-center gap-3 text-[11px] theme-muted">
                     <span className="glass-chip px-3 py-1 rounded-full">
                         {pomodoroPhase === 'work' ? '专注中' : pomodoroPhase === 'shortBreak' ? '短休息' : '长休息'}
                     </span>
@@ -208,7 +219,7 @@ export const TimerView = ({ isMini, toggleMini, pendingConfig, onConfigConsumed,
             )}
 
             {/* --- 核心时间显示 (根据模式调整大小) --- */}
-            <div className="flex items-center gap-3 sm:gap-6 mb-14 scale-100 transition-all duration-500">
+            <div className="flex items-center gap-3 sm:gap-5 mb-7 scale-100 transition-all duration-500">
                 <TimeCard val={time.h} label="时" isMini={isMini} isGray={isGray} />
                 <Separator isMini={isMini} isGray={isGray} />
                 <TimeCard val={time.m} label="分" isMini={isMini} isGray={isGray} />
@@ -217,7 +228,7 @@ export const TimerView = ({ isMini, toggleMini, pendingConfig, onConfigConsumed,
             </div>
 
             {/* --- 任务输入框 (极简模式下只读) --- */}
-            <div className="w-full mb-10 max-w-md px-8">
+            <div className="w-full mb-7 max-w-md px-8">
                     <input 
                         type="text" 
                         value={taskName}
@@ -229,7 +240,7 @@ export const TimerView = ({ isMini, toggleMini, pendingConfig, onConfigConsumed,
 
             {/* 番茄休息设置（仅番茄模式 & 正常模式） */}
             {!isMini && mode === 'pomodoro' && (
-                <div className="mb-6 -mt-4 flex flex-wrap justify-center gap-4 text-xs text-gray-500">
+                <div className="mb-4 flex flex-wrap justify-center gap-4 text-xs theme-muted">
                     <div className="flex items-center gap-2">
                         <span className="text-[11px]">短休息</span>
                         <DurationInputs
@@ -335,7 +346,7 @@ const TimeCard = ({ val, label, isMini, isGray }: { val: string; label: string; 
     <div className="flex flex-col items-center gap-1">
         <div
             className={`${
-                isMini ? 'w-16 h-20 rounded-xl text-4xl' : 'w-28 h-36 sm:w-36 sm:h-44 rounded-3xl text-7xl sm:text-8xl'
+                isMini ? 'w-16 h-20 rounded-xl text-4xl' : 'w-28 h-36 sm:w-32 sm:h-40 rounded-3xl text-6xl sm:text-7xl'
             } liquid-panel theme-accent flex items-center justify-center relative font-bold font-mono transition-all duration-500`}
         >
             {val}

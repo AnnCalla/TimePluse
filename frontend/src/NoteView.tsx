@@ -13,9 +13,11 @@ interface Note {
 interface NoteViewProps {
   onStickyChange?: (sticky: boolean) => void;
   theme: ThemeName;
+  compact?: boolean;
+  onRestore?: () => void;
 }
 
-export const NoteView = ({ onStickyChange, theme }: NoteViewProps) => {
+export const NoteView = ({ onStickyChange, theme, compact, onRestore }: NoteViewProps) => {
   const [notes, setNotes] = useState<Note[]>(() => {
     if (typeof window === 'undefined') return [];
     try {
@@ -120,6 +122,43 @@ export const NoteView = ({ onStickyChange, theme }: NoteViewProps) => {
     }
   };
 
+  if (compact) {
+    return (
+      <div className="draggable h-full w-full p-2" onDoubleClick={onRestore} title="拖动窗口；双击空白处恢复">
+        <div className="liquid-panel flex h-full w-full flex-col overflow-hidden rounded-3xl p-3">
+          <div className="mb-2 flex items-center justify-between">
+            {activeNote ? (
+              <input
+                value={activeNote.title}
+                onChange={event => updateActive({ title: event.target.value })}
+                onDoubleClick={event => event.stopPropagation()}
+                className="no-drag min-w-0 flex-1 bg-transparent text-sm font-semibold theme-text outline-none"
+              />
+            ) : <span className="text-sm font-semibold theme-text">快速便签</span>}
+            <div className="no-drag flex gap-1">
+              <button onClick={createNote} className="glass-icon-button px-3 text-[10px]">新建</button>
+              <button onClick={onRestore} className="glass-icon-button px-3 text-[10px]">还原</button>
+            </div>
+          </div>
+          {activeNote ? (
+            <textarea
+              value={activeNote.content}
+              onChange={event => updateActive({ content: event.target.value })}
+              onPaste={handlePaste}
+              onDoubleClick={event => event.stopPropagation()}
+              placeholder="随手记下此刻的想法…"
+              className="no-drag min-h-0 flex-1 resize-none rounded-2xl glass-inset p-3 text-xs leading-relaxed theme-text outline-none placeholder:opacity-50"
+            />
+          ) : (
+            <button onClick={createNote} className="no-drag m-auto theme-button rounded-2xl px-4 py-2 text-xs text-white">
+              创建第一条便签
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   // Sticky 模式：主窗口变成一张悬浮便签
   if (isStickyMode && activeNote) {
     const themeClass =
@@ -212,14 +251,12 @@ export const NoteView = ({ onStickyChange, theme }: NoteViewProps) => {
   return (
     <div className="flex h-full w-full gap-4 p-4">
       {/* 左侧笔记列表 */}
-      <div className="w-56 glass-panel rounded-2xl p-3 flex flex-col gap-2">
-        <div className="flex justify-between items-center mb-1 text-xs text-gray-600">
+      <div className="w-56 liquid-panel rounded-2xl p-3 flex flex-col gap-2">
+        <div className="flex justify-between items-center mb-1 text-xs theme-muted">
           <span className="font-semibold">笔记</span>
           <button
             onClick={createNote}
-            className={`px-2 py-1 rounded-full text-[11px] text-white ${
-              isGray ? 'bg-gray-600 hover:bg-gray-700' : 'bg-tp-green hover:bg-lime-500'
-            }`}
+            className="px-2 py-1 rounded-full text-[11px] text-white theme-button"
           >
             新建
           </button>
@@ -232,10 +269,10 @@ export const NoteView = ({ onStickyChange, theme }: NoteViewProps) => {
             <button
               key={note.id}
               onClick={() => setActiveId(note.id)}
-              className={`w-full text-left px-3 py-2 rounded-xl text-[11px] border bg-white/70 hover:bg-white flex flex-col gap-0.5 ${
+              className={`w-full text-left px-3 py-2 rounded-xl text-[11px] glass-inset flex flex-col gap-0.5 ${
                 note.id === activeId
-                  ? (isGray ? 'border-gray-700 text-gray-800' : 'border-tp-green text-gray-800')
-                  : 'border-white/80 text-gray-600'
+                  ? 'border-current theme-text'
+                  : 'theme-muted'
               }`}
             >
               <span className="font-medium truncate">{note.title}</span>
@@ -246,28 +283,22 @@ export const NoteView = ({ onStickyChange, theme }: NoteViewProps) => {
       </div>
 
       {/* 右侧编辑 + 预览 */}
-      <div className="flex-1 glass-panel rounded-2xl flex flex-col overflow-hidden">
+      <div className="flex-1 liquid-panel rounded-2xl flex flex-col overflow-hidden">
         {!activeNote ? (
           <div className="flex-1 flex items-center justify-center text-sm text-gray-400">
             请选择或新建一条笔记
           </div>
         ) : (
           <>
-            <div className="flex items-center justify-between px-4 py-2 border-b border-white/60 bg-white/50 text-xs text-gray-600">
+            <div className="flex items-center justify-between px-4 py-2 border-b border-white/20 bg-white/5 text-xs theme-muted">
               <input
-                className={`flex-1 mr-3 bg-transparent border-b border-dashed text-sm text-gray-800 focus:outline-none ${
-                  isGray ? 'border-gray-300 focus:border-gray-700' : 'border-gray-300 focus:border-tp-green'
-                }`}
+                className="flex-1 mr-3 bg-transparent border-b border-dashed border-white/30 text-sm theme-text focus:outline-none"
                 value={activeNote.title}
                 onChange={e => updateActive({ title: e.target.value })}
               />
               <div className="flex gap-2">
                 <button
-                  className={`px-2 py-1 rounded-full text-[11px] ${
-                    isGray
-                      ? 'bg-gray-700/10 text-gray-700 hover:bg-gray-700/20'
-                      : 'bg-tp-green/10 text-tp-green hover:bg-tp-green/20'
-                  }`}
+                  className="px-2 py-1 rounded-full text-[11px] theme-control"
                   title="以悬浮便签形式显示当前笔记"
                   onClick={enterSticky}
                   disabled={!activeNote}
@@ -285,13 +316,13 @@ export const NoteView = ({ onStickyChange, theme }: NoteViewProps) => {
             </div>
             <div className="flex flex-1 overflow-hidden">
               <textarea
-                className="w-1/2 h-full resize-none p-3 text-sm font-mono bg-white/60 border-r border-white/70 focus:outline-none"
+                className="w-1/2 h-full resize-none p-3 text-sm font-mono bg-white/10 theme-text border-r border-white/20 focus:outline-none"
                 value={activeNote.content}
                 onChange={e => updateActive({ content: e.target.value })}
                 onPaste={handlePaste}
                 placeholder="在这里用 Markdown 书写，支持粘贴图片（会以内联方式插入）。"
               />
-              <div className="w-1/2 h-full p-3 overflow-auto text-sm prose prose-sm max-w-none bg-white/40">
+              <div className="w-1/2 h-full p-3 overflow-auto text-sm prose prose-sm max-w-none bg-white/5 theme-text">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{activeNote.content}</ReactMarkdown>
               </div>
             </div>
