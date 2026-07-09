@@ -10,6 +10,14 @@ export function GetHistory() {
   return window['go']['main']['App']['GetHistory']();
 }
 
+export function GetScreenContrast(arg1, arg2) {
+  return window['go']['main']['App']['GetScreenContrast'](arg1, arg2);
+}
+
 export function SaveHistory(arg1, arg2, arg3) {
   return window['go']['main']['App']['SaveHistory'](arg1, arg2, arg3);
+}
+
+export function SetMiniWindowMode(arg1) {
+  return window['go']['main']['App']['SetMiniWindowMode'](arg1);
 }

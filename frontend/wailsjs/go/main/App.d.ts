@@ -5,4 +5,8 @@ export function GetStoragePath():Promise<string>;
 
 export function GetHistory():Promise<Array<any>>;
 
+export function GetScreenContrast(arg1:number,arg2:number):Promise<string>;
+
 export function SaveHistory(arg1:string,arg2:number,arg3:string):Promise<string>;
+
+export function SetMiniWindowMode(arg1:boolean):Promise<void>;

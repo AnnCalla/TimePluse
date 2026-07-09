@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Play, Pause, Check, Minimize2, RotateCcw, Settings2, SkipForward, BarChart3 } from 'lucide-react';
 import { useTimer, TimerMode } from './useTimer';
 import { WindowSetSize, WindowSetAlwaysOnTop, WindowCenter } from '../wailsjs/runtime/runtime';
-import { getThemeOption, ThemeName } from './theme';
+import { ThemeName } from './theme';
 import { TimerStats } from './TimerStats';
 
 interface TimerViewProps {
@@ -14,9 +14,10 @@ interface TimerViewProps {
     } | null;
     onConfigConsumed?: () => void;
     theme: ThemeName;
+    miniContrast: 'light' | 'dark';
 }
 
-export const TimerView = ({ isMini, toggleMini, pendingConfig, onConfigConsumed, theme }: TimerViewProps) => {
+export const TimerView = ({ isMini, toggleMini, pendingConfig, onConfigConsumed, theme, miniContrast }: TimerViewProps) => {
     const [showSettings, setShowSettings] = useState(false);
     const [showStats, setShowStats] = useState(false);
     const {
@@ -71,14 +72,12 @@ export const TimerView = ({ isMini, toggleMini, pendingConfig, onConfigConsumed,
 
     const currentInitial = mode === 'pomodoro' ? pomodoroInitial : customInitial;
     const isGray = theme === 'graphite';
-    const miniText = getThemeOption(theme).miniText;
-
     if (isMini) {
         const compactTime = time.h === '00' ? `${time.m}:${time.s}` : `${time.h}:${time.m}:${time.s}`;
         return (
             <div
                 className={`draggable flex h-full w-full cursor-move flex-col items-center justify-center bg-transparent ${
-                    miniText === 'light' ? 'text-white mini-text-light' : 'text-slate-950 mini-text-dark'
+                    miniContrast === 'light' ? 'text-white mini-text-light' : 'text-slate-950 mini-text-dark'
                 }`}
                 onDoubleClick={toggleMini}
                 title="拖动窗口；双击恢复完整模式"
@@ -121,7 +120,7 @@ export const TimerView = ({ isMini, toggleMini, pendingConfig, onConfigConsumed,
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => setShowStats(true)}
-                            className="glass-icon-button"
+                            className="glass-icon-button theme-control"
                             title="专注统计"
                         >
                             <BarChart3 size={19} />
@@ -165,7 +164,7 @@ export const TimerView = ({ isMini, toggleMini, pendingConfig, onConfigConsumed,
                         {/* 极简模式按钮 */}
                         <button 
                             onClick={toggleMini}
-                            className="glass-icon-button"
+                            className="glass-icon-button theme-control"
                             title="进入极简模式"
                         >
                             <Minimize2 size={20} />
@@ -175,8 +174,8 @@ export const TimerView = ({ isMini, toggleMini, pendingConfig, onConfigConsumed,
             )}
 
             {/* 番茄状态提示（仅番茄模式 & 正常模式） */}
-            {!isMini && mode === 'pomodoro' && (
-                <div className="absolute top-20 flex items-center gap-3 text-[11px] theme-muted">
+            {mode === 'pomodoro' && (
+                <div className="mb-3 flex items-center gap-3 text-[11px] theme-muted">
                     <span className="glass-chip px-3 py-1 rounded-full">
                         {pomodoroPhase === 'work' ? '专注中' : pomodoroPhase === 'shortBreak' ? '短休息' : '长休息'}
                     </span>
@@ -292,7 +291,7 @@ export const TimerView = ({ isMini, toggleMini, pendingConfig, onConfigConsumed,
                 {mode === 'pomodoro' && (
                     <button
                         onClick={skipRound}
-                        className="w-14 h-14 rounded-2xl glass-inset theme-muted flex items-center justify-center transition-all hover:theme-text"
+                        className="w-14 h-14 rounded-2xl glass-inset theme-control flex items-center justify-center transition-all"
                         title={pomodoroPhase === 'work' ? '跳过本轮专注（不计入完成）' : '结束休息'}
                     >
                         <SkipForward size={isMini ? 16 : 20} />
@@ -302,7 +301,7 @@ export const TimerView = ({ isMini, toggleMini, pendingConfig, onConfigConsumed,
                 {mode === 'stopwatch' && (
                     <button
                         onClick={finishStopwatch}
-                        className="w-14 h-14 rounded-2xl glass-inset theme-muted flex items-center justify-center transition-all"
+                        className="w-14 h-14 rounded-2xl glass-inset theme-control flex items-center justify-center transition-all"
                         title="完成并保存正计时"
                     >
                         <Check size={isMini ? 16 : 20} />
@@ -313,7 +312,7 @@ export const TimerView = ({ isMini, toggleMini, pendingConfig, onConfigConsumed,
                 {/* 正常模式：只显示重置按钮 */}
                     <button
                         onClick={resetTimer}
-                        className="w-14 h-14 rounded-2xl glass-inset theme-muted flex items-center justify-center transition-all"
+                        className="w-14 h-14 rounded-2xl glass-inset theme-control flex items-center justify-center transition-all"
                         title="重置计时"
                     >
                         <RotateCcw size={20} />

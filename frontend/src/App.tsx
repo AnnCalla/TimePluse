@@ -3,13 +3,18 @@ import { Layout } from './Layout';
 import { TimerView } from './TimerView';
 import { PlannerView } from './PlannerView';
 import { NoteView } from './NoteView';
-import { WindowSetSize, WindowSetAlwaysOnTop, WindowCenter, EventsOn } from '../wailsjs/runtime/runtime';
+import {
+    WindowSetSize, WindowSetAlwaysOnTop, WindowCenter, EventsOn,
+    WindowGetPosition, WindowHide, WindowShow,
+} from '../wailsjs/runtime/runtime';
 import { isThemeName, ThemeName } from './theme';
+import { GetScreenContrast, SetMiniWindowMode } from '../wailsjs/go/main/App';
 
 function App() {
     const [activeTab, setActiveTab] = useState('timer');
     // 极简模式状态
     const [isMini, setIsMini] = useState(false);
+    const [miniContrast, setMiniContrast] = useState<'light' | 'dark'>('dark');
     const [isStickyNote, setIsStickyNote] = useState(false);
     const [theme, setTheme] = useState<ThemeName>(() => {
         if (typeof window === 'undefined') return 'wallpaper';
@@ -49,18 +54,58 @@ function App() {
         }
     }, [theme]);
 
-    const handleToggleMini = () => {
+    useEffect(() => {
+        if (!isMini) return;
+        let cancelled = false;
+        const refreshContrast = async () => {
+            try {
+                const position = await WindowGetPosition();
+                const samples = await Promise.all([
+                    GetScreenContrast(position.x + 150, position.y - 2),
+                    GetScreenContrast(position.x + 150, position.y + 202),
+                    GetScreenContrast(position.x - 2, position.y + 100),
+                    GetScreenContrast(position.x + 302, position.y + 100),
+                ]);
+                if (!cancelled) {
+                    const lightVotes = samples.filter(sample => sample === 'light').length;
+                    setMiniContrast(lightVotes >= 2 ? 'light' : 'dark');
+                }
+            } catch {
+                // Keep the last known contrast if screen sampling is temporarily unavailable.
+            }
+        };
+        const timer = window.setInterval(refreshContrast, 1200);
+        return () => {
+            cancelled = true;
+            window.clearInterval(timer);
+        };
+    }, [isMini]);
+
+    const handleToggleMini = async () => {
         if (!isMini) {
-            // -> 进入极简模式
+            await SetMiniWindowMode(true);
+            WindowSetSize(300, 200);
+            WindowSetAlwaysOnTop(true);
             setIsMini(true);
-            WindowSetSize(300, 200); // 变小
-            WindowSetAlwaysOnTop(true); // 置顶
+
+            // 暂时隐藏窗口后读取其中心下方的真实屏幕像素，避免采到窗口自身。
+            window.setTimeout(async () => {
+                try {
+                    const position = await WindowGetPosition();
+                    WindowHide();
+                    await new Promise(resolve => window.setTimeout(resolve, 80));
+                    const contrast = await GetScreenContrast(position.x + 150, position.y + 100);
+                    setMiniContrast(contrast === 'light' ? 'light' : 'dark');
+                } finally {
+                    WindowShow();
+                }
+            }, 120);
         } else {
-            // -> 恢复正常模式
+            await SetMiniWindowMode(false);
             setIsMini(false);
-            WindowSetSize(1024, 650); // 恢复原大
-            WindowSetAlwaysOnTop(false); // 取消置顶
-            WindowCenter(); // 居中
+            WindowSetSize(1024, 650);
+            WindowSetAlwaysOnTop(false);
+            WindowCenter();
         }
     };
 
@@ -92,6 +137,7 @@ function App() {
                     pendingConfig={pendingTimerConfig}
                     onConfigConsumed={() => setPendingTimerConfig(null)}
                     theme={theme}
+                    miniContrast={miniContrast}
                 />
             )}
             {activeTab === 'planner' && !isMini && (

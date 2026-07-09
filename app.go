@@ -106,3 +106,13 @@ func (a *App) GetHistory() []HistoryItem {
 	}
 	return data.History
 }
+
+// SetMiniWindowMode 切换 Windows 系统背板，确保迷你窗口是真透明而非浅色 Mica。
+func (a *App) SetMiniWindowMode(enabled bool) {
+	a.setMiniWindowMode(enabled)
+}
+
+// GetScreenContrast 根据指定屏幕像素的真实亮度返回适合的前景色。
+func (a *App) GetScreenContrast(x int, y int) string {
+	return a.screenContrastAt(x, y)
+}
