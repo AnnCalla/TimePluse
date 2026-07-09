@@ -27,6 +27,11 @@ export interface TimerHistoryItem {
 }
 
 const nowISODate = () => new Date().toISOString().slice(0, 10);
+const nowLocalDateTime = () => {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  return now.toISOString().slice(0, 16);
+};
 
 interface PlannerViewProps {
   onStartTimerFromPlanner?: (payload: {
@@ -53,7 +58,7 @@ export const PlannerView = ({ onStartTimerFromPlanner, theme, compact, onRestore
   const [title, setTitle] = useState('');
   const [urgency, setUrgency] = useState<UrgencyLevel>(2);
   const [importance, setImportance] = useState<ImportanceLevel>(2);
-  const [deadline, setDeadline] = useState<string>('');
+  const [deadline, setDeadline] = useState<string>(nowLocalDateTime);
   const [category, setCategory] = useState<Category>('work');
   const [expectedMinutesInput, setExpectedMinutesInput] = useState<string>('');
 
@@ -89,7 +94,7 @@ export const PlannerView = ({ onStartTimerFromPlanner, theme, compact, onRestore
     };
     setItems(prev => [...prev, item]);
     setTitle('');
-    setDeadline('');
+    setDeadline(nowLocalDateTime());
     setUrgency(2);
     setImportance(2);
     setCategory('work');
@@ -156,7 +161,7 @@ export const PlannerView = ({ onStartTimerFromPlanner, theme, compact, onRestore
 
   const todaySummary = useMemo(() => {
     const today = nowISODate();
-    const doneToday = items.filter(it => it.done && it.deadline === today);
+    const doneToday = items.filter(it => it.done && it.deadline?.slice(0, 10) === today);
     if (!doneToday.length) return '今天还没有完成的计划，可以先从最重要的一件小事开始。';
     return `今天你完成了 ${doneToday.length} 件计划，其中例如：${doneToday
       .slice(0, 3)
@@ -225,7 +230,7 @@ export const PlannerView = ({ onStartTimerFromPlanner, theme, compact, onRestore
           <select
             value={urgency}
             onChange={e => setUrgency(Number(e.target.value) as UrgencyLevel)}
-            className="px-2 py-1 rounded-xl border border-gray-200 bg-white/70 text-xs"
+            className="px-3 py-2 rounded-xl border border-gray-200 bg-white/70 text-sm"
           >
             <option value={1}>不紧急</option>
             <option value={2}>一般紧急</option>
@@ -234,19 +239,19 @@ export const PlannerView = ({ onStartTimerFromPlanner, theme, compact, onRestore
           <select
             value={importance}
             onChange={e => setImportance(Number(e.target.value) as ImportanceLevel)}
-            className="px-2 py-1 rounded-xl border border-gray-200 bg-white/70 text-xs"
+            className="px-3 py-2 rounded-xl border border-gray-200 bg-white/70 text-sm"
           >
             <option value={1}>不重要</option>
             <option value={2}>比较重要</option>
             <option value={3}>非常重要</option>
           </select>
           <input
-            type="date"
+            type="datetime-local"
             value={deadline}
             onChange={e => setDeadline(e.target.value)}
-            className="px-2 py-1 rounded-xl border border-gray-200 bg-white/70 text-xs"
+            className="px-3 py-2 rounded-xl border border-gray-200 bg-white/70 text-sm"
           />
-          <div className="flex items-center gap-1 text-xs text-gray-500">
+          <div className="flex items-center gap-1 text-sm text-gray-500">
             <span>预估</span>
             <input
               type="number"
@@ -255,14 +260,14 @@ export const PlannerView = ({ onStartTimerFromPlanner, theme, compact, onRestore
               value={expectedMinutesInput}
               onChange={e => setExpectedMinutesInput(e.target.value)}
               placeholder="分钟"
-              className="w-16 px-2 py-1 rounded-xl border border-gray-200 bg-white/70 text-xs text-right"
+              className="w-20 px-3 py-2 rounded-xl border border-gray-200 bg-white/70 text-sm text-right"
             />
             <span>分钟</span>
           </div>
           <select
             value={category}
             onChange={e => setCategory(e.target.value as Category)}
-            className="px-2 py-1 rounded-xl border border-gray-200 bg-white/70 text-xs"
+            className="px-3 py-2 rounded-xl border border-gray-200 bg-white/70 text-sm"
           >
             <option value="work">工作</option>
             <option value="life">生活</option>
@@ -441,7 +446,7 @@ const Quadrant = ({ title, color, items, onReflect, onStartTimerFromPlanner, onD
                 {it.expectedMinutes && ` · 预估${it.expectedMinutes}分`}
               </span>
               <span className="flex items-center gap-2">
-                {it.deadline && <span>截止 {it.deadline}</span>}
+                {it.deadline && <span>截止 {it.deadline.replace('T', ' ')}</span>}
                 <span>{it.category === 'work' ? '工作' : '生活'}</span>
               </span>
             </div>

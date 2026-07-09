@@ -41,6 +41,7 @@ func (a *App) startup(ctx context.Context) {
 
 	// 启动全局快捷键监听（例如 Ctrl+Alt+P 唤起笔记）
 	go a.initHotkeys()
+	go a.initTray()
 }
 
 // HandleBeforeClose 在点击窗口关闭按钮时触发：默认隐藏到托盘而不是退出
@@ -115,4 +116,13 @@ func (a *App) SetMiniWindowMode(enabled bool) {
 // GetScreenContrast 根据指定屏幕像素的真实亮度返回适合的前景色。
 func (a *App) GetScreenContrast(x int, y int) string {
 	return a.screenContrastAt(x, y)
+}
+
+// QuitApplication 同时清理托盘并彻底结束 Wails 进程。
+func (a *App) QuitApplication() {
+	a.allowQuit = true
+	a.quitTray()
+	if a.ctx != nil {
+		runtime.Quit(a.ctx)
+	}
 }

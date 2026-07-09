@@ -21,3 +21,7 @@ export function SaveHistory(arg1, arg2, arg3) {
 export function SetMiniWindowMode(arg1) {
   return window['go']['main']['App']['SetMiniWindowMode'](arg1);
 }
+
+export function QuitApplication() {
+  return window['go']['main']['App']['QuitApplication']();
+}

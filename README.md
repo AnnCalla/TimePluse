@@ -21,6 +21,17 @@ TimePulse 是一个基于 Wails、Go、React 和 TypeScript 的桌面应用，�
 
 标题栏中的眼睛关闭图标用于“隐藏到后台”，程序、计时和全局快捷键会继续运行；`X` 用于彻底退出程序。隐藏后可使用任一全局快捷键重新唤起。
 
+隐藏到后台后，TimePulse 会显示在 Windows 通知区域（托盘）中。右键托盘图标可选择“显示主窗口”“迷你番茄钟”或“彻底退出”。
+
+## 更换应用图标和标题
+
+- Windows EXE 图标及托盘图标：替换 `build/windows/icon.ico`，建议包含 16、24、32、48、64、128、256 像素多尺寸。
+- Wails 通用源图：替换 `build/appicon.png`，建议使用透明背景的 1024×1024 PNG。
+- 窗口标题文字：修改 `main.go` 中的 `Title: "TimePulse"`。
+- 应用内左上角标题：修改 `frontend/src/Layout.tsx` 中的 `TimePulse` 文本。
+
+替换图标后需要重新执行 `wails build`，已经生成的 EXE 不会自动变化。Windows 有时会缓存旧图标，可重启资源管理器或更改输出文件名后确认。
+
 ## 项目状态
 
 - Go 后端、Wails 窗口和三个主要前端视图已经成型。

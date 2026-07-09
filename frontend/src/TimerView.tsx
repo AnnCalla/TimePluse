@@ -138,7 +138,7 @@ export const TimerView = ({
                         </button>
                         {/* 当前模式的时长设置（精确到秒） */}
                         {mode !== 'stopwatch' && (
-                            <div className="hidden sm:flex items-center gap-2 text-xs text-gray-400 bg-white/60 px-3 py-1 rounded-full backdrop-blur-sm border border-white/70">
+                            <div className="hidden sm:flex items-center gap-2 text-sm theme-muted bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm border border-white/30">
                                 <span className="uppercase tracking-wide">
                                     {mode === 'pomodoro' ? '番茄时长' : '倒计时时长'}
                                 </span>
@@ -186,7 +186,7 @@ export const TimerView = ({
 
             {/* 番茄状态提示（仅番茄模式 & 正常模式） */}
             {mode === 'pomodoro' && (
-                <div className="mb-3 flex shrink-0 items-center gap-3 text-[11px] theme-muted">
+                <div className="mb-3 flex shrink-0 items-center gap-3 text-sm theme-muted">
                     <span className="glass-chip px-3 py-1 rounded-full">
                         {pomodoroPhase === 'work' ? '专注中' : pomodoroPhase === 'shortBreak' ? '短休息' : '长休息'}
                     </span>
@@ -240,9 +240,9 @@ export const TimerView = ({
 
             {/* 番茄休息设置（仅番茄模式 & 正常模式） */}
             {!isMini && mode === 'pomodoro' && (
-                <div className="mb-4 flex flex-wrap justify-center gap-4 text-xs theme-muted">
+                <div className="mb-4 flex flex-wrap justify-center gap-5 text-sm theme-muted">
                     <div className="flex items-center gap-2">
-                        <span className="text-[11px]">短休息</span>
+                        <span className="text-sm font-semibold">短休息</span>
                         <DurationInputs
                             totalSeconds={shortBreakDuration}
                             disabled={isRunning}
@@ -256,7 +256,7 @@ export const TimerView = ({
                         />
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-[11px]">长休息</span>
+                        <span className="text-sm font-semibold">长休息</span>
                         <DurationInputs
                             totalSeconds={longBreakDuration}
                             disabled={isRunning}
@@ -270,7 +270,7 @@ export const TimerView = ({
                         />
                     </div>
                     <div className="flex items-center gap-1">
-                        <span className="text-[11px]">每</span>
+                        <span className="text-sm">每</span>
                         <input
                             type="number"
                             min={1}
@@ -284,7 +284,7 @@ export const TimerView = ({
                             }}
                             className="w-10 px-1 py-0.5 text-xs text-center bg-transparent border-b border-white/30 focus:outline-none disabled:opacity-40 theme-text"
                         />
-                        <span className="text-[11px]">轮工作后长休息</span>
+                        <span className="text-sm">轮工作后长休息</span>
                     </div>
                 </div>
             )}

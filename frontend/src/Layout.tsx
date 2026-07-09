@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { LayoutDashboard, Timer, StickyNote, X, Minus, Maximize2, EyeOff } from 'lucide-react';
-import { Quit, WindowHide, WindowMinimise, WindowToggleMaximise } from "../wailsjs/runtime/runtime"; 
+import { WindowHide, WindowMinimise, WindowToggleMaximise } from "../wailsjs/runtime/runtime"; 
+import { QuitApplication } from '../wailsjs/go/main/App';
 import { THEME_OPTIONS, ThemeName } from './theme';
 
 interface LayoutProps {
@@ -58,7 +59,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
                             <EyeOff size={16}/>
                         </button>
                         <button
-                            onClick={Quit}
+                            onClick={QuitApplication}
                             className="p-1 hover:bg-red-500 hover:text-white rounded-full transition"
                             title="彻底退出 TimePulse"
                         >
